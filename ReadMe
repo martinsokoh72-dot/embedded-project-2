@@ -10,7 +10,7 @@ The video showcase of this project can be viewed via: https://youtu.be/aQIbt7y0x
 
 Hardware Requirements
 STM32L432 microcontroller board (e.g., Nucleo-L432KC)
-Quadrature rotary encoder (2 pulses per revolution)
+Quadrature rotary encoder 
 DC FAN
 LED (visual status indicator)
 330 Ohms resistor
