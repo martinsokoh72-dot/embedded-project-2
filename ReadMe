@@ -6,6 +6,7 @@ Embedded Systems Project – EENG1030 Course
 Project Description
 This embedded system project implements a real-time motor speed monitoring and control system using an STM32L432 microcontroller. The system reads rotational speed from a quadrature encoder, controls motor speed via PWM output, provides visual feedback using an LED, and activates an audible buzzer alarm when the motor exceeds a safe speed threshold of 3500 RPM. A serial debug interface and SPI display provide real-time status information.
 
+The video showcase of this project can be viewed via: https://youtu.be/aQIbt7y0xQ4?si=WVbYLmp21I6872UJ
 Hardware Requirements
 STM32L432 microcontroller board (e.g., Nucleo-L432KC)
 Quadrature rotary encoder (2 pulses per revolution)
