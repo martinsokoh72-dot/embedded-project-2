@@ -1,0 +1,136 @@
+STM32L432 Advanced Motor Speed Controller with Overspeed Alarm
+
+Author : Martins Osemudiamen Okoh.
+Embedded Systems Project – EENG1030 Course
+
+Project Description
+This embedded system project implements a real-time motor speed monitoring and control system using an STM32L432 microcontroller. The system reads rotational speed from a quadrature encoder, controls motor speed via PWM output, provides visual feedback using an LED, and activates an audible buzzer alarm when the motor exceeds a safe speed threshold of 3500 RPM. A serial debug interface and SPI display provide real-time status information.
+
+The video showcase of this project can be viewed via: https://youtu.be/aQIbt7y0xQ4?si=WVbYLmp21I6872UJ
+
+Hardware Requirements
+STM32L432 microcontroller board (e.g., Nucleo-L432KC)
+Quadrature rotary encoder (2 pulses per revolution)
+DC FAN
+LED (visual status indicator)
+330 Ohms resistor
+Buzzer (audible alarm)
+LCD display
+USB-to-UART converter for serial debugging
+
+Features
+Encoder reading – Timer 2 configured in quadrature encoder mode (mode 3) counts pulses from both encoder channels
+PWM generation – Timer 16 produces a 25 kHz PWM signal with adjustable duty cycle based on encoder position
+Speed calculation – Converts encoder pulses to revolutions per minute using a measurement interval of 0.1333 seconds
+Overspeed detection – Triggers alarm when RPM exceeds 3500
+Visual alarm – LED turns off during overspeed condition (normally on when speed is safe)
+Audible alarm – Buzzer generates a 500 Hz square wave using Timer 6 interrupts
+Serial monitoring – Outputs encoder value, PWM duty, and RPM to serial console
+Display support – SPI display shows encoder position and current RPM
+
+Key Parameters
+Parameter	Value
+System clock	80 MHz
+Pulses per revolution	2
+PWM frequency	25 kHz
+PWM resolution	3200 steps (0–3199)
+RPM safe threshold	3500 RPM
+Buzzer frequency	500 Hz
+Buzzer timer interrupt rate	1000 Hz (1 ms)
+Main loop update rate	10 Hz (100 ms delay)
+
+
+Register Configuration Summary
+
+Timer 2 (Encoder)
+Mode: Quadrature encoder mode 3 (counts on both edges)
+ARR: 159 (full scale count range)
+Inputs: PA0 (TI1) and PB3 (TI2) as capture inputs
+
+Timer 6 (Buzzer)
+Prescaler: 7999 (divides 80 MHz to 10 kHz)
+ARR: 9 (produces 1 kHz update events)
+Interrupt: Toggles PB6 at 500 Hz when playing = 1
+
+Timer 16 (PWM)
+Prescaler: 0
+ARR: 3199 (25 kHz PWM)
+CCR1: 1600 (50% duty cycle, adjustable)
+BDTR: MOE bit set (required for output)
+
+Software Structure
+                   
+Main Loop Operation
+Read encoder counter (TIM2->CNT) as motor position/voltage
+Scale value and update PWM duty cycle (TIM16->CCR1)
+Safely copy interrupt-driven pulse_count (interrupts disabled briefly)
+Calculate speed in Hz and RPM
+Check overspeed condition and control LED/buzzer
+Output status via serial
+Update SPI display with position and RPM
+Delay 100 ms and repeat
+
+Interrupt Handlers
+                   
+TIM6_DAC_IRQHandler – Toggles buzzer pin at 500 Hz when playing = 1, ensures buzzer is off when playing = 0
+EXTI4_IRQHandler – Counts tachometer pulses on PB4 (incrementing pulse_count)
+
+Speed Calculation Formula
+                
+speed_hz = pulse_count / pulse_per_rev
+speed_rpm = speed_hz × 450
+The factor 450 assumes a 0.1333 second measurement interval (60 seconds ÷ 0.1333 = 450).
+
+Serial Output
+Initialization verification:
+
+MODER PA6: 2
+AFR PA6: 14
+TIM16 CR1: 129
+TIM16 CCER: 1
+TIM16 BDTR: 32768
+TIM16 ARR: 3199
+TIM16 CCR1: 1600
+Runtime monitoring:
+
+ENC: 45, CCR1: 905, RPM: 1250, buzz: 0
+ENC: 78, CCR1: 1568, RPM: 2150, buzz: 0
+ENC: 120, CCR1: 2415, RPM: 3300, buzz: 0
+ENC: 155, CCR1: 3118, RPM: 4250, buzz: 1   ← Overspeed!
+Building and Flashing
+                   
+Prerequisites
+ARM GCC toolchain (arm-none-eabi-gcc)
+STM32CubeProgrammer or OpenOCD
+ST-Link debugger (built into Nucleo boards)
+
+
+Troubleshooting
+Symptom	Likely Cause	Fix
+No PWM output	MOE bit not set	Ensure TIM16->BDTR = 0x8000
+Encoder not counting	Wrong alternate function	Verify PA0 and PB3 are AF1
+Buzzer silent	TIM6 interrupt disabled	Check NVIC->ISER[1] bit 22
+LED always off	Constant overspeed	Verify speed_rpm calculation
+Display blank	SPI initialization failed	Check display power and connections
+                   
+Files in Project
+File	Description
+                   
+main.c	Main program and peripheral initialization
+display.h	SPI display driver
+eeng1030_lib.h	Course library utilities
+Makefile	Build configuration
+Key Functions Reference
+Function	Purpose
+setup()	System-wide hardware initialization
+initEncoder()	Configures TIM2 for quadrature encoder
+initTimer16()	Sets up PWM output on PA6
+initBuzzerTimer()	Configures TIM6 for buzzer tone
+pinMode()	Sets GPIO direction
+enablePullUp()	Enables internal pull-up resistor
+delay_ms()	Millisecond blocking delay
+                   
+Safety Notes
+The buzzer produces a 500 Hz tone at full volume during overspeed – protect hearing during testing
+Ensure motor driver can handle the 25 kHz PWM switching frequency
+The LED indicates safe operation (ON below 3500 RPM) – if LED remains off during normal speed, check encoder readings
