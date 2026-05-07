@@ -18,16 +18,6 @@ Buzzer (audible alarm)
 LCD display
 USB-to-UART converter for serial debugging
 
-Pin Connections
-Component	Pin	Configuration
-Encoder CLK	PA0	TIM2 CH1 (AF1)
-Encoder DT	PB3	TIM2 CH2 (AF1)
-PWM Output	PA6	TIM16 CH1 (AF14)
-Tachometer Input	PB4	Digital input with pull-up
-Status LED	PB5	Digital output
-Buzzer	PB6	Digital output
-UART TX	Assigned	Serial output at 9600 baud
-
 Features
 Encoder reading – Timer 2 configured in quadrature encoder mode (mode 3) counts pulses from both encoder channels
 PWM generation – Timer 16 produces a 25 kHz PWM signal with adjustable duty cycle based on encoder position
