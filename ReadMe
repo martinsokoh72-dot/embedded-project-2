@@ -7,6 +7,9 @@ Project Description
 This embedded system project implements a real-time, closed-loop motor speed monitoring and control system using an STM32L432KC microcontroller. The system reads rotational speed from a quadrature encoder for user input and a tachometer for fan feedback. It controls the fan speed via PWM output, provides visual feedback using an LED, and activates an audible buzzer alarm when the fan exceeds a safe speed threshold of 3500 RPM. A serial debug interface and an SPI display provide real-time status information.
 
 The video showcase of this project can be viewed via: https://youtu.be/aQIbt7y0xQ4?si=APt8LlkEA8uwMtla
+A techncial report for this project can be found in this repository: /Technical Report.pdf
+The schematic design was performed using KIcad in this repository: /embeeded_project_design.kicad_sch
+The main source code file for this project can be found in this repository directory: /source code/src/main.c
 
 Aim & Objectives
 Aim: Design and implementation of an advanced PC fan speed controller using an STM32L432KC microcontroller with an overspeed alarm.
