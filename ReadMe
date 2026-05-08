@@ -45,7 +45,7 @@ System Pin Connections
                         GND (Black)	          GND	Ground
                         +12V (Yellow)	        12V Supply	Power
     
-3)  LED Indicator	      Anode	                PB5	Overspeed Status
+3)  LED Indicator	    Anode	                PB5	Overspeed Status
                         Cathode	              GND (via 330Ω)	
     
 4)  Buzzer	            Positive	            PB6	Audible Alarm
@@ -60,7 +60,7 @@ System Pin Connections
                         VCC	                  3.3V	Power
                         GND	                  GND	Ground
     
-6)  Serial Debug	      TX	                  PA2	USART2_TX
+6)  Serial Debug	    TX	                  PA2	USART2_TX
                         RX	                  PA15	USART2_RX
 
 Features
