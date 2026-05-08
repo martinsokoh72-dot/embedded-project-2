@@ -1,88 +1,186 @@
-STM32L432 Advanced PC FAN Speed Controller with Overspeed Alarm
-
-Author : Martins Osemudiamen Okoh.
-Embedded Systems Project – EENG1030 Course
+STM32L432 Advanced PC Fan Speed Controller with Overspeed Alarm
+Author: Martins Osemudiamen Okoh
+TU Dublin ID: A0004717
+Course: Embedded Systems Project – EENG1030
 
 Project Description
-This embedded system project implements a real-time motor speed monitoring and control system using an STM32L432 microcontroller. The system reads rotational speed from a quadrature encoder, controls motor speed via PWM output, provides visual feedback using an LED, and activates an audible buzzer alarm when the motor exceeds a safe speed threshold of 3500 RPM. A serial debug interface and SPI display provide real-time status information.
+This embedded system project implements a real-time, closed-loop motor speed monitoring and control system using an STM32L432KC microcontroller. The system reads rotational speed from a quadrature encoder for user input and a tachometer for fan feedback. It controls the fan speed via PWM output, provides visual feedback using an LED, and activates an audible buzzer alarm when the fan exceeds a safe speed threshold of 3500 RPM. A serial debug interface and an SPI display provide real-time status information.
 
 The video showcase of this project can be viewed via: https://youtu.be/aQIbt7y0xQ4?si=APt8LlkEA8uwMtla
 
+Aim & Objectives
+Aim: Design and implementation of an advanced PC fan speed controller using an STM32L432KC microcontroller with an overspeed alarm.
+
+Objectives:
+
+Schematic design of the PC fan speed controller.
+
+Software implementation.
+
+Hardware implementation.
+
+Testing / Debugging.
+
+Documentation.
+
 Hardware Requirements
-STM32L432 microcontroller board (e.g., Nucleo-L432KC)
-Quadrature rotary encoder 
-DC FAN
+Components List
+STM32L432KC microcontroller board (e.g., Nucleo-L432KC)
+
+12V PC Fan with 4-wire connection (PWM control & Tachometer output)
+
+Quadrature rotary encoder
+
+1.8" TFT SPI LCD (ST7735S)
+
 LED (visual status indicator)
-330 Ohms resistor
+
 Buzzer (audible alarm)
-LCD display
-USB-to-UART converter for serial debugging
 
+Push button (for tachometer input)
+
+330 Ohm resistor
+
+Breadboard and connecting wires
+
+12V DC Bench Power Supply
+
+USB-to-UART converter / USB Cable (for serial debugging)
+
+System Pin Connections
+Component	Signal	STM32L432 Pin	Function
+Rotary Encoder	CLK	PA0	TIM2_CH1 (Encoder Input)
+DT	PB3	TIM2_CH2 (Encoder Input)
+VCC	3.3V	Power
+GND	GND	Ground
+PC Fan	PWM (Blue)	PA6	TIM16_CH1 (Speed Control)
+Tachometer (Green)	PB4	EXTI4 (Speed Feedback)
+GND (Black)	GND	Ground
++12V (Yellow)	12V Supply	Power
+LED Indicator	Anode	PB5	Overspeed Status
+Cathode	GND (via 330Ω)	
+Buzzer	Positive	PB6	Audible Alarm
+Negative	GND	
+SPI LCD	SCL	PA5	SPI1_SCK
+SDA	PA7	SPI1_MOSI
+CS	PA4	Chip Select
+RESET	PB0	Reset
+DC	PB1	Data/Command
+VCC	3.3V	Power
+GND	GND	Ground
+Serial Debug	TX	PA2	USART2_TX
+RX	PA15	USART2_RX
 Features
-Encoder reading – Timer 2 configured in quadrature encoder mode (mode 3) counts pulses from both encoder channels
-PWM generation – Timer 16 produces a 25 kHz PWM signal with adjustable duty cycle based on encoder position
-Speed calculation – Converts encoder pulses to revolutions per minute using a measurement interval of 0.1333 seconds
-Overspeed detection – Triggers alarm when RPM exceeds 3500
-Visual alarm – LED turns off during overspeed condition (normally on when speed is safe)
-Audible alarm – Buzzer generates a 500 Hz square wave using Timer 6 interrupts
-Serial monitoring – Outputs encoder value, PWM duty, and RPM to serial console
-Display support – SPI display shows encoder position and current RPM
+Encoder-based Speed Control: A quadrature encoder connected to TIM2 (Mode 3) provides precise user input for setting the fan speed.
 
-Key Parameters
+PWM Generation: Timer 16 produces a 25 kHz PWM signal on PA6, with a duty cycle adjustable from 0% to 100% based on the encoder position.
+
+Tachometer Speed Calculation: Measures actual fan RPM by counting tachometer pulses (2 pulses/rev) on PB4 over a 0.1333-second interval.
+
+Overspeed Detection & Alarm: Triggers an audiovisual alarm when the RPM exceeds 3500.
+
+Visual Alarm: LED (PB5) turns OFF (normally ON when speed is safe).
+
+Audible Alarm: Buzzer (PB6) generates a 500 Hz square wave.
+
+Real-Time Monitoring: Outputs encoder value, PWM duty, and RPM to a serial console for debugging.
+
+SPI Display: Shows current encoder position and fan RPM on a 1.8" TFT LCD.
+
+Key System Parameters
 Parameter	Value
-System clock	80 MHz
-Pulses per revolution	2
-PWM frequency	25 kHz
-PWM resolution	3200 steps (0–3199)
-RPM safe threshold	3500 RPM
-Buzzer frequency	500 Hz
-Buzzer timer interrupt rate	1000 Hz (1 ms)
-Main loop update rate	10 Hz (100 ms delay)
-
-
+System Clock	80 MHz
+PWM Frequency	25 kHz
+PWM Resolution	3200 steps (ARR = 3199)
+Encoder Count Range	0 - 159 (ARR = 159)
+RPM Safe Threshold	3500 RPM
+Buzzer Tone Frequency	500 Hz
+Buzzer Timer Interrupt Rate	1000 Hz (1 ms)
+Main Loop Update Rate	10 Hz (100 ms delay)
 Register Configuration Summary
-
 Timer 2 (Encoder)
-Mode: Quadrature encoder mode 3 (counts on both edges)
-ARR: 159 (full scale count range)
-Inputs: PA0 (TI1) and PB3 (TI2) as capture inputs
+Mode: Quadrature encoder mode 3 (counts on both edges of TI1 and TI2)
 
-Timer 6 (Buzzer)
-Prescaler: 7999 (divides 80 MHz to 10 kHz)
-ARR: 9 (produces 1 kHz update events)
-Interrupt: Toggles PB6 at 500 Hz when playing = 1
+Auto-reload (ARR): 159 (0-159 count range)
 
-Timer 16 (PWM)
-Prescaler: 0
-ARR: 3199 (25 kHz PWM)
-CCR1: 1600 (50% duty cycle, adjustable)
-BDTR: MOE bit set (required for output)
+Inputs: PA0 (TI1) and PB3 (TI2) as capture inputs (Alternate Function 1)
 
-Software Structure
-                   
-Main Loop Operation
-Read encoder counter (TIM2->CNT) as motor position/voltage
-Scale value and update PWM duty cycle (TIM16->CCR1)
-Safely copy interrupt-driven pulse_count (interrupts disabled briefly)
-Calculate speed in Hz and RPM
-Check overspeed condition and control LED/buzzer
-Output status via serial
-Update SPI display with position and RPM
-Delay 100 ms and repeat
+Timer 16 (PWM for Fan Speed)
+Prescaler (PSC): 0
+
+Auto-reload (ARR): 3199 (results in 80 MHz / 3200 = 25 kHz)
+
+Pulse (CCR1): 1600 (default 50% duty cycle)
+
+Output: PA6 (Alternate Function 14)
+
+Break and Dead-Time (BDTR): MOE bit set (required for PWM output)
+
+Timer 6 (Buzzer Tone)
+Prescaler (PSC): 7999 (divides 80 MHz to 10 kHz)
+
+Auto-reload (ARR): 9 (results in 10 kHz / 10 = 1 kHz update events)
+
+Interrupt: Toggles PB6 on each interrupt, producing a 500 Hz square wave when active.
+
+External Interrupt (EXTI4 for Tachometer)
+Pin: PB4
+
+Trigger: Falling edge
+
+Action: Increments pulse_count variable on each fan pulse (2 pulses/rev)
+
+Software Structure & Operation
+Main Loop (10 Hz Update Rate)
+Read encoder counter (TIM2->CNT) as the desired speed position.
+
+Scale the encoder value (0-159) to a PWM duty cycle (0-3199) and update TIM16->CCR1.
+
+Safely copy the interrupt-driven pulse_count (with interrupts temporarily disabled).
+
+Calculate speed in Hz and RPM:
+
+speed_hz = pulse_count / pulse_per_rev (pulse_per_rev = 2)
+
+speed_rpm = speed_hz × 450 (The factor 450 is derived from a 0.1333s measurement interval: 60 / 0.1333 = 450).
+
+Check overspeed condition:
+
+If RPM <= 3500: Turn LED ON, set playing = 0 (buzzer off).
+
+If RPM > 3500: Turn LED OFF, set playing = 1 (buzzer on).
+
+Output status string via serial (Encoder, PWM, RPM, Buzzer State).
+
+Update SPI display with current encoder position and RPM.
+
+Delay for 100 ms and repeat.
 
 Interrupt Handlers
-                   
-TIM6_DAC_IRQHandler – Toggles buzzer pin at 500 Hz when playing = 1, ensures buzzer is off when playing = 0
-EXTI4_IRQHandler – Counts tachometer pulses on PB4 (incrementing pulse_count)
+TIM6_DAC_IRQHandler: Runs at 1 kHz. If playing == 1, toggles PB6 to generate a 500 Hz tone. If playing == 0, ensures PB6 is LOW.
 
-Speed Calculation Formula
-                
-speed_hz = pulse_count / pulse_per_rev
-speed_rpm = speed_hz × 450
-The factor 450 assumes a 0.1333 second measurement interval (60 seconds ÷ 0.1333 = 450).
+EXTI4_IRQHandler: Runs on every falling edge from the fan's tachometer pin (PB4). Increments the volatile pulse_count variable.
 
-Serial Output
-Initialization verification:
+Building and Flashing
+Prerequisites
+ARM GCC toolchain (arm-none-eabi-gcc)
+
+STM32CubeProgrammer or OpenOCD
+
+ST-Link debugger (built into Nucleo boards)
+
+Setup & Build Instructions
+Clone the repository and navigate to the project directory.
+
+Connect the STM32L432 Nucleo board to your PC via USB.
+
+Run make to build the project and generate the binary file.
+
+Run make flash to program the binary onto the microcontroller using ST-Link.
+
+Serial Output Examples
+Initialization Verification:
+
 
 MODER PA6: 2
 AFR PA6: 14
@@ -91,46 +189,34 @@ TIM16 CCER: 1
 TIM16 BDTR: 32768
 TIM16 ARR: 3199
 TIM16 CCR1: 1600
-Runtime monitoring:
+Runtime Monitoring:
 
 ENC: 45, CCR1: 905, RPM: 1250, buzz: 0
 ENC: 78, CCR1: 1568, RPM: 2150, buzz: 0
 ENC: 120, CCR1: 2415, RPM: 3300, buzz: 0
 ENC: 155, CCR1: 3118, RPM: 4250, buzz: 1   ← Overspeed!
-Building and Flashing
-                   
-Prerequisites
-ARM GCC toolchain (arm-none-eabi-gcc)
-STM32CubeProgrammer or OpenOCD
-ST-Link debugger (built into Nucleo boards)
-
 
 Troubleshooting
 Symptom	Likely Cause	Fix
-No PWM output	MOE bit not set	Ensure TIM16->BDTR = 0x8000
-Encoder not counting	Wrong alternate function	Verify PA0 and PB3 are AF1
-Buzzer silent	TIM6 interrupt disabled	Check NVIC->ISER[1] bit 22
-LED always off	Constant overspeed	Verify speed_rpm calculation
-Display blank	SPI initialization failed	Check display power and connections
-                   
+No PWM output	MOE bit not set in TIM16 BDTR	Ensure TIM16->BDTR = 0x8000 in initTimer16().
+Encoder not counting	Wrong alternate function for pins	Verify PA0 and PB3 are configured as Alternate Function 1 (AF1).
+Buzzer always silent	TIM6 interrupt disabled	Check NVIC ISER1 bit 22 (IRQ 54) is enabled.
+LED always off	Constant overspeed condition or GPIO error	Verify the speed_rpm calculation and PB5 mode.
+Fan not spinning at 100%	PWM frequency mismatch	Ensure TIM16 ARR=3199 for 25kHz, as required by the 4-wire fan spec.
+Display blank	SPI initialization failure or power	Check display power (3.3V) and SPI connections (PA5, PA7, PA4, etc.).
+
+Safety Notes
+Hearing Protection: The buzzer produces a 500 Hz tone at full volume during overspeed. Avoid prolonged exposure during testing.
+
+Voltages: The system uses a 12V supply for the fan. Ensure all connections are secure to prevent short circuits.
+
+Fan Safety: Keep objects away from the fan blades while the system is powered.
+
+Current Limits: The LED is current-limited by a 330Ω resistor. Do not connect the LED without a current-limiting resistor.
+
 Files in Project
 File	Description
-                   
-main.c	Main program and peripheral initialization
-display.h	SPI display driver
-eeng1030_lib.h	Course library utilities
-Makefile	Build configuration
-Key Functions Reference
-Function	Purpose
-setup()	System-wide hardware initialization
-initEncoder()	Configures TIM2 for quadrature encoder
-initTimer16()	Sets up PWM output on PA6
-initBuzzerTimer()	Configures TIM6 for buzzer tone
-pinMode()	Sets GPIO direction
-enablePullUp()	Enables internal pull-up resistor
-delay_ms()	Millisecond blocking delay
-                   
-Safety Notes
-The buzzer produces a 500 Hz tone at full volume during overspeed – protect hearing during testing
-Ensure motor driver can handle the 25 kHz PWM switching frequency
-The LED indicates safe operation (ON below 3500 RPM) – if LED remains off during normal speed, check encoder readings
+main.c	Main program, peripheral initialization, and main loop.
+display.h/c	SPI display driver for the ST7735S LCD.
+eeng1030_lib.h	Course library with utilities for GPIO, delays, serial, etc.
+Makefile	Build configuration for the ARM GCC toolchain.
