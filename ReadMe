@@ -13,147 +13,116 @@ Aim: Design and implementation of an advanced PC fan speed controller using an S
 
 Objectives:
 
-Schematic design of the PC fan speed controller.
-
-Software implementation.
-
-Hardware implementation.
-
-Testing / Debugging.
-
-Documentation.
+1) Schematic design of the PC fan speed controller.
+2) Software implementation.
+3) Hardware implementation.
+4) Testing / Debugging.
+5) Documentation.
 
 Hardware Requirements
 Components List
-STM32L432KC microcontroller board (e.g., Nucleo-L432KC)
-
-12V PC Fan with 4-wire connection (PWM control & Tachometer output)
-
-Quadrature rotary encoder
-
-1.8" TFT SPI LCD (ST7735S)
-
-LED (visual status indicator)
-
-Buzzer (audible alarm)
-
-Push button (for tachometer input)
-
-330 Ohm resistor
-
-Breadboard and connecting wires
-
-12V DC Bench Power Supply
-
-USB-to-UART converter / USB Cable (for serial debugging)
+1) STM32L432KC microcontroller board (e.g., Nucleo-L432KC)
+2) 12V PC Fan with 4-wire connection (PWM control & Tachometer output)
+3) Quadrature rotary encoder
+4) 1.8" TFT SPI LCD (ST7735S)
+5) LED (visual status indicator)
+6) Buzzer (audible alarm)
+7) Push button (for tachometer input)
+8) 330 Ohm resistor
+9) Breadboard and connecting wires
+10) 12V DC Bench Power Supply
+11) USB-to-UART converter / USB Cable (for serial debugging)
 
 System Pin Connections
-Component	Signal	STM32L432 Pin	Function
-Rotary Encoder	CLK	PA0	TIM2_CH1 (Encoder Input)
-DT	PB3	TIM2_CH2 (Encoder Input)
-VCC	3.3V	Power
-GND	GND	Ground
-PC Fan	PWM (Blue)	PA6	TIM16_CH1 (Speed Control)
-Tachometer (Green)	PB4	EXTI4 (Speed Feedback)
-GND (Black)	GND	Ground
-+12V (Yellow)	12V Supply	Power
-LED Indicator	Anode	PB5	Overspeed Status
-Cathode	GND (via 330Ω)	
-Buzzer	Positive	PB6	Audible Alarm
-Negative	GND	
-SPI LCD	SCL	PA5	SPI1_SCK
-SDA	PA7	SPI1_MOSI
-CS	PA4	Chip Select
-RESET	PB0	Reset
-DC	PB1	Data/Command
-VCC	3.3V	Power
-GND	GND	Ground
-Serial Debug	TX	PA2	USART2_TX
-RX	PA15	USART2_RX
+    Component	          Signal	              STM32L432 Pin	Function
+1)  Rotary Encoder      CLK	                  PA0	TIM2_CH1 (Encoder Input)
+                        DT	                  PB3	TIM2_CH2 (Encoder Input)
+                        VCC                   3.3V	Power
+                        GND	                  GND	Ground
+    
+2)  PC Fan	            PWM (Blue)	          PA6	TIM16_CH1 (Speed Control)
+                        Tachometer (Green)	  PB4	EXTI4 (Speed Feedback)
+                        GND (Black)	          GND	Ground
+                        +12V (Yellow)	        12V Supply	Power
+    
+3)  LED Indicator	      Anode	                PB5	Overspeed Status
+                        Cathode	              GND (via 330Ω)	
+    
+4)  Buzzer	            Positive	            PB6	Audible Alarm
+                        Negative	            GND	
+    
+5)  LCD Screen (SPI)    LCD	                  3.3v
+                        SCL	                  PA5	SPI1_SCK
+                        SDA	                  PA7	SPI1_MOSI
+                        CS	                  PA4	Chip Select
+                        RESET	                PB0	Reset
+                        DC	                  PB1	Data/Command
+                        VCC	                  3.3V	Power
+                        GND	                  GND	Ground
+    
+6)  Serial Debug	      TX	                  PA2	USART2_TX
+                        RX	                  PA15	USART2_RX
+
 Features
-Encoder-based Speed Control: A quadrature encoder connected to TIM2 (Mode 3) provides precise user input for setting the fan speed.
+1) Encoder-based Speed Control: A quadrature encoder connected to TIM2 (Mode 3) provides precise user input for setting the fan speed.
+2) PWM Generation: Timer 16 produces a 25 kHz PWM signal on PA6, with a duty cycle adjustable from 0% to 100% based on the encoder position.
+3) Tachometer Speed Calculation: Measures actual fan RPM by counting tachometer pulses (2 pulses/rev) on PB4 over a 0.1333-second interval.
+4) Overspeed Detection & Alarm: Triggers an audiovisual alarm when the RPM exceeds 3500.
+5) Visual Alarm: LED (PB5) turns OFF (normally ON when speed is safe).
+6) Audible Alarm: Buzzer (PB6) generates a 500 Hz square wave.
+7) Real-Time Monitoring: Outputs encoder value, PWM duty, and RPM to a serial console for debugging.
+8) SPI Display: Shows current encoder position and fan RPM on a 1.8" TFT LCD.
 
-PWM Generation: Timer 16 produces a 25 kHz PWM signal on PA6, with a duty cycle adjustable from 0% to 100% based on the encoder position.
+        Key System Parameters
+    Parameter	                      Value
+1)  System Clock	                  80 MHz
+2)  PWM Frequency	                  25 kHz
+3)  PWM Resolution	                3200 steps (ARR = 3199)
+4)  Encoder Count Range	            0 - 159 (ARR = 159)
+5)  RPM Safe Threshold	            3500 RPM
+6)  Buzzer Tone Frequency	          500 Hz
+7)  Buzzer Timer Interrupt Rate	    1000 Hz (1 ms)
+8)  Main Loop Update Rate	          10 Hz (100 ms delay)
 
-Tachometer Speed Calculation: Measures actual fan RPM by counting tachometer pulses (2 pulses/rev) on PB4 over a 0.1333-second interval.
-
-Overspeed Detection & Alarm: Triggers an audiovisual alarm when the RPM exceeds 3500.
-
-Visual Alarm: LED (PB5) turns OFF (normally ON when speed is safe).
-
-Audible Alarm: Buzzer (PB6) generates a 500 Hz square wave.
-
-Real-Time Monitoring: Outputs encoder value, PWM duty, and RPM to a serial console for debugging.
-
-SPI Display: Shows current encoder position and fan RPM on a 1.8" TFT LCD.
-
-Key System Parameters
-Parameter	Value
-System Clock	80 MHz
-PWM Frequency	25 kHz
-PWM Resolution	3200 steps (ARR = 3199)
-Encoder Count Range	0 - 159 (ARR = 159)
-RPM Safe Threshold	3500 RPM
-Buzzer Tone Frequency	500 Hz
-Buzzer Timer Interrupt Rate	1000 Hz (1 ms)
-Main Loop Update Rate	10 Hz (100 ms delay)
 Register Configuration Summary
 Timer 2 (Encoder)
-Mode: Quadrature encoder mode 3 (counts on both edges of TI1 and TI2)
-
-Auto-reload (ARR): 159 (0-159 count range)
-
-Inputs: PA0 (TI1) and PB3 (TI2) as capture inputs (Alternate Function 1)
+1) Mode: Quadrature encoder mode 3 (counts on both edges of TI1 and TI2)
+2) Auto-reload (ARR): 159 (0-159 count range)
+3) Inputs: PA0 (TI1) and PB3 (TI2) as capture inputs (Alternate Function 1)
 
 Timer 16 (PWM for Fan Speed)
-Prescaler (PSC): 0
-
-Auto-reload (ARR): 3199 (results in 80 MHz / 3200 = 25 kHz)
-
-Pulse (CCR1): 1600 (default 50% duty cycle)
-
-Output: PA6 (Alternate Function 14)
-
-Break and Dead-Time (BDTR): MOE bit set (required for PWM output)
+1) Prescaler (PSC): 0
+2) Auto-reload (ARR): 3199 (results in 80 MHz / 3200 = 25 kHz)
+3) Pulse (CCR1): 1600 (default 50% duty cycle)
+4) Output: PA6 (Alternate Function 14)
+5) Break and Dead-Time (BDTR): MOE bit set (required for PWM output)
 
 Timer 6 (Buzzer Tone)
-Prescaler (PSC): 7999 (divides 80 MHz to 10 kHz)
-
-Auto-reload (ARR): 9 (results in 10 kHz / 10 = 1 kHz update events)
-
-Interrupt: Toggles PB6 on each interrupt, producing a 500 Hz square wave when active.
+1) Prescaler (PSC): 7999 (divides 80 MHz to 10 kHz)
+2) Auto-reload (ARR): 9 (results in 10 kHz / 10 = 1 kHz update events)
+3) Interrupt: Toggles PB6 on each interrupt, producing a 500 Hz square wave when active.
 
 External Interrupt (EXTI4 for Tachometer)
-Pin: PB4
-
-Trigger: Falling edge
-
-Action: Increments pulse_count variable on each fan pulse (2 pulses/rev)
+1) Pin: PB4
+2) Trigger: Falling edge
+3) Action: Increments pulse_count variable on each fan pulse (2 pulses/rev)
 
 Software Structure & Operation
 Main Loop (10 Hz Update Rate)
 Read encoder counter (TIM2->CNT) as the desired speed position.
-
 Scale the encoder value (0-159) to a PWM duty cycle (0-3199) and update TIM16->CCR1.
-
 Safely copy the interrupt-driven pulse_count (with interrupts temporarily disabled).
 
 Calculate speed in Hz and RPM:
-
 speed_hz = pulse_count / pulse_per_rev (pulse_per_rev = 2)
-
 speed_rpm = speed_hz × 450 (The factor 450 is derived from a 0.1333s measurement interval: 60 / 0.1333 = 450).
 
 Check overspeed condition:
-
 If RPM <= 3500: Turn LED ON, set playing = 0 (buzzer off).
-
 If RPM > 3500: Turn LED OFF, set playing = 1 (buzzer on).
 
 Output status string via serial (Encoder, PWM, RPM, Buzzer State).
-
 Update SPI display with current encoder position and RPM.
-
 Delay for 100 ms and repeat.
 
 Interrupt Handlers
@@ -164,18 +133,13 @@ EXTI4_IRQHandler: Runs on every falling edge from the fan's tachometer pin (PB4)
 Building and Flashing
 Prerequisites
 ARM GCC toolchain (arm-none-eabi-gcc)
-
 STM32CubeProgrammer or OpenOCD
-
 ST-Link debugger (built into Nucleo boards)
 
 Setup & Build Instructions
 Clone the repository and navigate to the project directory.
-
 Connect the STM32L432 Nucleo board to your PC via USB.
-
 Run make to build the project and generate the binary file.
-
 Run make flash to program the binary onto the microcontroller using ST-Link.
 
 Serial Output Examples
