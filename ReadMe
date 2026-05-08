@@ -34,7 +34,7 @@ Components List
 11) USB-to-UART converter / USB Cable (for serial debugging)
 
 System Pin Connections
-    Component	          Signal	              STM32L432 Pin	Function
+    Component	        Signal	              STM32L432 Pin	Function
 1)  Rotary Encoder      CLK	                  PA0	TIM2_CH1 (Encoder Input)
                         DT	                  PB3	TIM2_CH2 (Encoder Input)
                         VCC                   3.3V	Power
