@@ -77,11 +77,11 @@ Features
     Parameter	                      Value
 1)  System Clock	                  80 MHz
 2)  PWM Frequency	                  25 kHz
-3)  PWM Resolution	                3200 steps (ARR = 3199)
-4)  Encoder Count Range	            0 - 159 (ARR = 159)
-5)  RPM Safe Threshold	            3500 RPM
+3)  PWM Resolution	                  3200 steps (ARR = 3199)
+4)  Encoder Count Range	              0 - 159 (ARR = 159)
+5)  RPM Safe Threshold	              3500 RPM
 6)  Buzzer Tone Frequency	          500 Hz
-7)  Buzzer Timer Interrupt Rate	    1000 Hz (1 ms)
+7)  Buzzer Timer Interrupt Rate	      1000 Hz (1 ms)
 8)  Main Loop Update Rate	          10 Hz (100 ms delay)
 
 Register Configuration Summary
